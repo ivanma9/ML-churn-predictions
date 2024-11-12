@@ -4,6 +4,7 @@ import pickle
 import numpy as np
 import os
 from openai import OpenAI
+import utils as ut
 
 client = OpenAI(base_url="https://api.groq.com/openai/v1", api_key=os.environ['GROQ_API_KEY'])
 
@@ -56,10 +57,18 @@ def make_prediction(input_df, input_dict):
       'KNN': knn_model.predict_proba(input_df)[0][1]
   }
   avg_probability = np.mean(list(probabilities.values()))
-  st.markdown("### Model Probabiltiies")
-  for model, prob in probabilities.items():
-    st.write(f"{model}: {prob}")
-  st.write(f"Average Probability: {avg_probability}")
+
+  col1, col2 = st.columns(2)
+
+  with col1:
+    fig = ut.create_guage_chart(avg_probability)
+    st.plotly_chart(fig, use_container_width=True)
+    st.write(f"The customer has a {avg_probability:.2%} probability of churning")
+
+  with col2:
+    fig_probs = ut.create_model_probability_chart(probabilities)
+    st.plotly_chart(fig_probs, use_container_width=True)
+
   return avg_probability
 
 
